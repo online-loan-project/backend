@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Traits\BaseApiResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
@@ -91,6 +90,12 @@ class AuthController extends Controller
         $token = $user->createToken('token_base_name')->plainTextToken;
 
         return $this->successLogin($user, $token, 'Login', 'Login successful');
+    }
+    //get me function
+    public function me()
+    {
+        $user = auth()->user();
+        return $this->success($user, 'User', 'User data retrieved successfully');
     }
 
 }
