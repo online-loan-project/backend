@@ -7,9 +7,11 @@ use App\Constants\ConstUserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Models\Borrower;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
+use App\Traits\OTP;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     use BaseApiResponse;
+    use OTP;
 
 
     /**
@@ -96,6 +99,21 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         return $this->success($user, 'User', 'User data retrieved successfully');
+    }
+    //send OTP with auth user
+    public function sendVerify()
+    {
+        $user = auth()->user();
+        $data = $this->sendOTP($user);
+        //send OTP to user email
+        return $this->success($data, 'OTP', 'OTP sent successfully');
+    }
+    //verify OTP with auth user
+    public function verifyOTP(VerifyCodeRequest $request)
+    {
+        $user = auth()->user();
+        $data = $this->verifyOtpCode($user, $request->input('code'));
+        return $this->success($data, 'OTP', 'OTP verified successfully');
     }
 
 }
