@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Borrower::class);
     }
+    //relation to request_loan table
+    public function requestLoan()
+    {
+        return $this->hasMany(RequestLoan::class);
+    }
 }
