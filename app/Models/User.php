@@ -64,4 +64,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(RequestLoan::class);
     }
+    //relation to credit_score table
+    public function creditScore()
+    {
+        return $this->hasOne(CreditScore::class);
+    }
 }

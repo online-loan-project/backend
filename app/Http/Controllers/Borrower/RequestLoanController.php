@@ -72,9 +72,14 @@ class RequestLoanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(RequestLoan $requestLoan)
+    public function show()
     {
-        //
+        // show request loan details with status = pending
+        $requestLoan = RequestLoan::query()->where('status', 'pending')->get();
+        if ($requestLoan) {
+            return $this->success($requestLoan);
+        }
+        return $this->failed('Request Loan not found', 404);
     }
 
     /**
