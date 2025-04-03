@@ -40,4 +40,5 @@ trait BaseApiResponse
             'alert' => $alert,
         ], $code);
     }
+
 }

@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Models\Borrower;
+use App\Models\CreditScore;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Traits\OTP;
@@ -58,6 +59,12 @@ class AuthController extends Controller
             // Generate a token for the user
             $token = $user->createToken('token_base_name')->plainTextToken;
 
+            //give the user a default credit score
+            CreditScore::query()->create([
+                'user_id' => $user->id,
+                'score' => 50,
+                'status' => 1,
+            ]);
 
             // Store registration time in session
             session(['registered_time' => now()]);
