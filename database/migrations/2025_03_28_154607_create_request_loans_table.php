@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('request_loans', function (Blueprint $table) {
             $table->id();
             $table->decimal('loan_amount', 10, 2);
+            $table->decimal('approved_amount', 10, 2)->default(0);
             $table->Integer('loan_duration');
             $table->string('loan_type');
             $table->enum('status', ['pending', 'approved', 'rejected', 'eligible'])->default('pending');

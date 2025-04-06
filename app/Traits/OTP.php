@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Traits;
 
 use App\Models\PhoneOtp;
@@ -7,7 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 
-trait OTP{
+trait OTP
+{
     public function sendOTP($user)
     {
         $otp = rand(1000, 9999);
@@ -17,7 +19,22 @@ trait OTP{
             'phone' => $phone,
             'otp' => $otp,
             'expires_at' => $expires_at
-    ]);
+        ]);
+
+        $method = env('OTP_METHOD', 'telegram');
+        $chat_id = env('OTP_TELEGRAM_CHAT_ID', '123456789'); // Replace with your chat ID
+
+        if ($method == 'telegram') {
+            $this->sendTelegramOtp($chat_id, $otp);
+        } elseif ($method == 'plasgate') {
+            $this->sendPlasgateOtp($phone, $otp);
+        } else {
+            return response()->json(['message' => 'Invalid OTP method.'], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function sendPlasgateOtp($phone, $otp)
+    {
         $plasgateApiUrl = "https://cloudapi.plasgate.com/api/send";
         $plasgateUsername = env('OTP_USERNAME');
         $plasgatePassword = env('OTP_PASSWORD');
@@ -32,6 +49,20 @@ trait OTP{
         ]);
         return $response->json();
     }
+    //send otp to telegram
+    public function sendTelegramOtp($chat_id, $otp)
+    {
+        $telegramApiUrl = "https://api.telegram.org/bot" . env('OTP_TELEGRAM_BOT_TOKEN') . "/sendMessage";
+        $content = "Your OTP code is: $otp";
+        $response = Http::post($telegramApiUrl, [
+            'chat_id' => $chat_id,
+            'text' => $content
+        ]);
+        return $response->json();
+    }
+
+    //plasgate api send otp
+
     public function verifyOtpCode($user, $code)
     {
         $now = Carbon::now(); // Get the current time
