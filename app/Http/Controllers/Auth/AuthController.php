@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
+use App\Models\Admin;
 use App\Models\Borrower;
 use App\Models\CreditScore;
 use App\Models\User;
@@ -46,13 +47,20 @@ class AuthController extends Controller
                 'role' => ConstUserRole::BORROWER,
                 'status' => ConstUserStatus::ACTIVE
                 ]);
-            $borrower = Borrower::query()->create([
+
+            $image = $request->file('image');
+            $imagePath = null;
+            if ($image) {
+                $imagePath = $this->uploadImage($image, 'borrower', 'public');
+            }
+
+            Borrower::query()->create([
                 'first_name' => $request->input('first_name'),
                 'last_name' => $request->input('last_name'),
                 'gender' => $request->input('gender'),
                 'dob' => $request->input('dob'),
                 'address' => $request->input('address'),
-                'image' => $request->input('image'),
+                'image' => $imagePath,
                 'user_id' => $user->id,
             ]);
 
@@ -97,7 +105,22 @@ class AuthController extends Controller
             return $this->failed(null, 'Fail', 'Invalid credentials', 401);
         }
 
+        $profile = null;
+        //check $user->role if admin or borrower so join the table
+        if ($user->role == ConstUserRole::BORROWER) {
+            $profile = Borrower::query()->where('user_id', $user->id)->first();
+        }
+
+        if ($user->role == ConstUserRole::ADMIN) {
+            $profile = Admin::query()->where('user_id', $user->id)->first();
+        }
+
         $token = $user->createToken('token_base_name')->plainTextToken;
+
+        //add $profile to user
+        $user->profile = $profile;
+        $user->role = (int) $user->role;
+        $user->status = (int) $user->status;
 
         return $this->successLogin($user, $token, 'Login', 'Login successful');
     }

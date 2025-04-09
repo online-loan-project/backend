@@ -31,19 +31,17 @@ class RequestLoanController extends Controller
         if($requestLoan){
             return $this->failed('You already have a pending request', 400);
         }
-        $nid_image_path = '';
-        $bank_statement_path = '';
-        //nid_image upload to storage and get the path
-        if ($request->hasFile('nid_image')) {
-            // Generate a unique filename and store the image
-            $imagePath = $request->file('image')->store('uploads/nid_image', 'public');
-           $nid_image_path = $imagePath;
+
+        $nid_image = $request->file('nid_image');
+        $nid_image_path = null;
+        if ($nid_image) {
+            $nid_image_path = $this->uploadImage($nid_image, 'nid_info', 'public');
         }
-        //bank_statement upload to storage and get the path
-        if ($request->hasFile('bank_statement')) {
-            // Generate a unique filename and store the image
-            $imagePath = $request->file('image')->store('uploads/bank_statement', 'public');
-            $bank_statement_path = $imagePath;
+
+        $bank_statement = $request->file('bank_statement');
+        $bank_statement_path = null;
+        if ($bank_statement) {
+            $bank_statement_path = $this->uploadImage($bank_statement, 'bank_statement', 'public');
         }
         $requestLoan = RequestLoan::query()->create([
             'loan_amount' => $request->loan_amount,

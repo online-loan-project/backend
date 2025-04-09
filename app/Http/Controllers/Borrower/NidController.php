@@ -42,10 +42,17 @@ class NidController extends Controller
             return $this->failed(null ,'NID information does not match with the borrower data.', null, 422);
         }
 
+        $image = $request->file('nid_image');
+        $imagePath = null;
+        if ($image) {
+            $imagePath = $this->uploadImage($image, 'nid_info', 'public');
+        }
+
+
         // store nid number in the database
         $nidInformation = NidInformation::query()->create([
             'nid_number' => $data['nid'],
-            'nid_image' => $request->file('nid_image')->store('uploads/nid_image', 'public'),
+            'nid_image' => $imagePath,
             'status' => 1,
             'request_loan_id' => 0,
         ]);
