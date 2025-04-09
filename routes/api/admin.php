@@ -15,6 +15,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', AdminAccessMiddleware::class
     Route::prefix('request-loan')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\RequestLoanController::class, 'index'])->name('request-loan.index');
         Route::get('/{id}', [App\Http\Controllers\Admin\RequestLoanController::class, 'show'])->name('request-loan.show');
+        Route::get('/eligibility', [App\Http\Controllers\Admin\RequestLoanController::class, 'eligibilityList'])->name('request-loan.eligibility');
     });
 
     //group credit score routes

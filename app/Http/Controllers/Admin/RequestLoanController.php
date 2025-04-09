@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\ConstRequestLoanStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Borrower\RequestLoanRequest;
 use App\Models\RequestLoan;
@@ -30,5 +31,17 @@ class RequestLoanController extends Controller
             return $this->success($requestLoan);
         }
         return $this->failed('Request loan not found', 404);
+    }
+    // Request loan eligibility list
+    public function eligibilityList(Request $request)
+    {
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+        $search = $request->query('search');
+
+        $requestLoan = RequestLoan::query()
+            ->where('id', 'like', "%$search%")
+            ->where('status', ConstRequestLoanStatus::ELIGIBLE)
+            ->paginate($perPage);
+        return $this->success($requestLoan);
     }
 }
