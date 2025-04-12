@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('approved_amount', 10, 2)->default(0);
             $table->Integer('loan_duration');
             $table->string('loan_type');
+            $table->string('rejection_reason')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected', 'eligible'])->default('pending');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();

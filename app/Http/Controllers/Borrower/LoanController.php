@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Borrower;
+
+use App\Http\Controllers\Controller;
+use App\Models\Loan;
+use App\Models\ScheduleRepayment;
+use App\Traits\ScheduleRepayments;
+use Illuminate\Http\Request;
+
+class LoanController extends Controller
+{
+    use ScheduleRepayments;
+    // Loan list
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+        $search = $request->query('search');
+        $userData = auth()->user();
+
+        $loan = Loan::query()
+            ->with('user') //join with user
+                ->where('user_id', $userData->id) //get loan by user id
+            //join with user search phone
+            ->whereHas('user', function ($query) use ($search) {
+                $query->where('phone', 'like', "%$search%");
+            })
+            ->paginate($perPage);
+        return $this->success($loan);
+    }
+    // Loan details by id
+    public function show($id)
+    {
+        $userData = auth()->user();
+        $loan = Loan::with('user')->where('user_id', $userData->id)->find($id);
+        if ($loan) {
+            return $this->success($loan);
+        }
+        return $this->failed('Loan not found', 404);
+    }
+    // repayment list by loan id
+    public function repaymentList($id, Request $request)
+    {
+
+        $userData = auth()->user();
+        $loan = ScheduleRepayment::query()
+            ->with('loan') //join with loan
+            ->where('loan_id', $id)
+            ->where('user_id', $userData->id)
+            ->get();
+        return $this->success($loan);
+    }
+
+}

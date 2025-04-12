@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Constants\ConstRequestLoanStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RejectReasonRequest;
 use App\Http\Requests\Borrower\RequestLoanRequest;
 use App\Models\RequestLoan;
+use App\Traits\LoanApproval;
+use App\Traits\LoanReject;
 use Illuminate\Http\Request;
 
 class RequestLoanController extends Controller
 {
+    Use LoanApproval;
+    Use LoanReject;
 
     // Request loan list
     public function index(Request $request)
@@ -43,5 +48,16 @@ class RequestLoanController extends Controller
             ->where('status', ConstRequestLoanStatus::ELIGIBLE)
             ->paginate($perPage);
         return $this->success($requestLoan);
+    }
+    // Request loan approve
+    public function approve($id)
+    {
+            return $this->success($this->approveLoan($id));
+    }
+    // Request loan reject
+    public function reject($id, RejectReasonRequest $request)
+    {
+        $reason = $request->input('reason');
+        return $this->success($this->rejectLoan($id, $reason));
     }
 }
