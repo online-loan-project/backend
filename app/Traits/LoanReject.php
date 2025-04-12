@@ -8,6 +8,7 @@ use App\Models\InterestRate;
 use App\Models\Loan;
 use App\Models\RequestLoan;
 use App\Models\ScheduleRepayment;
+use App\Models\User;
 
 Trait LoanReject
 {
@@ -28,6 +29,11 @@ Trait LoanReject
         $requestLoan->status = ConstRequestLoanStatus::REJECTED;
         $requestLoan->rejection_reason = $reason;
         $requestLoan->save();
+        $chatId = User::query()->where('id', $requestLoan->user_id)->first();
+        $this->sendTelegram(
+            $chatId->telegram_chat_id,
+            $reason,
+        );
         return 'Loan rejected successfully';
     }
 

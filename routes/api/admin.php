@@ -41,4 +41,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', AdminAccessMiddleware::class
         Route::get('/', [App\Http\Controllers\Admin\InterestRateController::class, 'index'])->name('interest-rate.index');
         Route::post('/create', [App\Http\Controllers\Admin\InterestRateController::class, 'create'])->name('interest-rate.create');
     });
+    //dashboard
+    Route::get('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard.index');
 });

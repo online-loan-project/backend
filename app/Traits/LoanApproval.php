@@ -8,12 +8,15 @@ use App\Models\InterestRate;
 use App\Models\Loan;
 use App\Models\RequestLoan;
 use App\Models\ScheduleRepayment;
+use App\Models\User;
 use PhpParser\Node\Stmt\Trait_;
 
 Trait LoanApproval
 {
+    use TelegramNotification;
     public function approveLoan($requestLoanId)
     {
+
         // Find the loan request by ID
         $requestLoan = RequestLoan::find($requestLoanId);
         if (!$requestLoan) {
@@ -56,6 +59,11 @@ Trait LoanApproval
         //update the request loan status
         $requestLoan->status = ConstRequestLoanStatus::APPROVED;
         $requestLoan->save();
+        $chatId = User::query()->where('id', $requestLoan->user_id)->first();
+        $this->sendTelegram(
+            $chatId->telegram_chat_id,
+            'Loan Approved',
+        );
         return 'Loan approved successfully';
     }
 

@@ -23,10 +23,20 @@ Trait ScheduleRepayments
         if ($scheduleRepayment->status == ConstLoanRepaymentStatus::PAID) {
             return 'Schedule repayment is already paid';
         }
-
+        if($scheduleRepayment->status != ConstLoanRepaymentStatus::LATE) {
+            $creditScore = CreditScore::where('user_id', $scheduleRepayment->loan->user_id)->first();
+            if($creditScore == 0 ) {
+                return 'Credit score is already 0';
+            }
+            if ($creditScore) {
+                $creditScore->score += 1; // Add 1 points for paid per one repayment
+                $creditScore->save();
+            }
+        }
         //update the schedule repayment status
         $scheduleRepayment->status = ConstLoanRepaymentStatus::PAID;
         $scheduleRepayment->save();
+
         return 'Schedule repayment marked as paid successfully';
     }
 
@@ -65,6 +75,14 @@ Trait ScheduleRepayments
         //update the schedule repayment status
         $scheduleRepayment->status = ConstLoanRepaymentStatus::LATE;
         $scheduleRepayment->save();
+        $creditScore = CreditScore::where('user_id', $scheduleRepayment->loan->user_id)->first();
+        if($creditScore == 0 ) {
+            return 'Credit score is already 0';
+        }
+        if ($creditScore) {
+            $creditScore->score -= 1; // Deduct 1 points for late  per one repayment
+            $creditScore->save();
+        }
         return 'Schedule repayment marked as late successfully';
     }
 

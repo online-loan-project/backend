@@ -8,13 +8,16 @@ use App\Models\Borrower;
 use App\Models\CreditScore;
 use App\Models\IncomeInformation;
 use App\Models\RequestLoan;
+use App\Models\User;
 
 trait LoanEligibility
 {
+    use TelegramNotification;
     use BaseApiResponse;
 
     public function checkLoanEligibility(int $userId, int $requestLoanId)
     {
+        $user = User::query()->find($userId);
         $borrower = Borrower::where('user_id', $userId)->first();
         if (!$borrower) {
             return 'Borrower not found';
@@ -79,7 +82,7 @@ trait LoanEligibility
             'status' => ConstRequestLoanStatus::ELIGIBLE,
             'approved_amount' => $approvedAmount // Assuming this column exists
         ]);
-
+        $this->sendTelegram($user->telgram_chat_id, "Loan eligibility check completed. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)");
         return "Eligible. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)";
     }
 
