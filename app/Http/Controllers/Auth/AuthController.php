@@ -30,6 +30,7 @@ class AuthController extends Controller
      */
     public function Register(RegisterRequest $request)
     {
+        logger($request->all());
         // Check if the user has already registered recently
         $existingUser = User::query()->where('email', $request->input('email'))->first();
         if ($existingUser) {
@@ -80,10 +81,9 @@ class AuthController extends Controller
             // Commit the transaction
             DB::commit();
 
-            // Prepare user and token response
-            $response = ['user' => $user, 'token' => $token,];
+            $user = User::query()->where('id', $user->id)->with('borrower')->first();
 
-            return $this->success($response, 'Registration', 'Registration successful', 201);
+            return $this->successLogin($user, $token, 'Register', 'Register successful');
         } catch (Exception $exception) {
             // Rollback the transaction in case of error
             DB::rollBack();
