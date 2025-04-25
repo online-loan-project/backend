@@ -17,6 +17,7 @@ use App\Traits\OTP;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -144,6 +145,29 @@ class AuthController extends Controller
         $user = auth()->user();
         $data = $this->verifyOtpCode($user, $request->input('code'));
         return $this->success($data, 'OTP', 'OTP verified successfully');
+    }
+
+    //logout function
+    public function logout()
+    {
+        $user = auth()->user();
+        $user->tokens()->delete();
+        return $this->success(null, 'Logout', 'Logout successful');
+    }
+
+    //telegram_chat_id store
+    public function storeTelegramChatId(Request $request)
+    {
+        $request->validate([
+            'chat_id' => 'required|string',
+        ]);
+
+        $chatId = $request->input('chat_id');
+
+        $user = auth()->user();
+        $user->telegram_chat_id = $chatId;
+        $user->save();
+        return $this->success(null, 'Telegram', 'Telegram chat id stored successfully');
     }
 
 }
