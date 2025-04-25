@@ -159,7 +159,7 @@ class AuthController extends Controller
     public function storeTelegramChatId(Request $request)
     {
         $request->validate([
-            'chat_id' => 'required|string',
+            'chat_id' => 'required',
         ]);
 
         $chatId = $request->input('chat_id');
