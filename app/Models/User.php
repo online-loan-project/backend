@@ -70,4 +70,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(CreditScore::class);
     }
+
+    //relation to liveliness table has many
+    public function liveliness()
+    {
+        return $this->hasMany(Liveliness::class);
+    }
+
 }

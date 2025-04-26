@@ -77,20 +77,51 @@ class RequestLoanController extends Controller
         ];
 
         return $this->success($data, 'Request Loan created successfully');
-
-
-
     }
 
     /**
      * Display the specified resource.
      */
-    public function show()
+    public function index(Request $request)
     {
-        // show request loan details with status = pending
-        $requestLoan = RequestLoan::query()->where('status', 'pending')->get();
-        if ($requestLoan) {
-            return $this->success($requestLoan);
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+
+        // Get paginated pending requests
+        $requestLoan = RequestLoan::query()
+            ->paginate($perPage);
+
+        // Get summary statistics
+        $totalRequests = RequestLoan::count();
+        $totalRequestAmount = RequestLoan::sum('loan_amount');
+
+        $statusCounts = RequestLoan::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Prepare the response data
+        $response = [
+            'data' => $requestLoan->items(),
+            'pagination' => [
+                'total' => $requestLoan->total(),
+                'per_page' => $requestLoan->perPage(),
+                'current_page' => $requestLoan->currentPage(),
+                'last_page' => $requestLoan->lastPage(),
+            ],
+            'summary' => [
+                'total_requests' => $totalRequests,
+                'total_request_amount' => $totalRequestAmount,
+                'status_counts' => [
+                    'pending' => $statusCounts['pending'] ?? 0,
+                    'eligible' => $statusCounts['eligible'] ?? 0,
+                    'approved' => $statusCounts['approved'] ?? 0,
+                    'rejected' => $statusCounts['rejected'] ?? 0,
+                ]
+            ]
+        ];
+
+        if ($requestLoan->count() > 0) {
+            return $this->success($response);
         }
         return $this->failed('Request Loan not found', 404);
     }

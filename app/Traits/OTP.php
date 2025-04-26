@@ -21,16 +21,14 @@ trait OTP
             'expires_at' => $expires_at
         ]);
 
-        $method = env('OTP_METHOD', 'telegram');
-        $chat_id = env('OTP_TELEGRAM_CHAT_ID', '123456789'); // Replace with your chat ID
-
-        if ($method == 'telegram') {
+        if ($user->telegram_chat_id) {
+            $chat_id = $user->telegram_chat_id;
             $this->sendTelegramOtp($chat_id, $otp);
-        } elseif ($method == 'plasgate') {
-            $this->sendPlasgateOtp($phone, $otp);
         } else {
-            return response()->json(['message' => 'Invalid OTP method.'], Response::HTTP_BAD_REQUEST);
+            $this->sendPlasgateOtp($phone, $otp);
         }
+
+        return response()->json(['message' => 'Invalid OTP method.'], Response::HTTP_BAD_REQUEST);
     }
 
     public function sendPlasgateOtp($phone, $otp)
@@ -76,9 +74,9 @@ trait OTP
         if ($otp) {
             $otp->delete();
             User::where('id', $user->id)->update(['phone_verified_at' => $now]);
-            return response()->json(['message' => 'OTP verified successfully.']);
+            return true;
         } else {
-            return response()->json(['message' => 'Invalid OTP code.'], Response::HTTP_BAD_REQUEST);
+            return false;
         }
     }
 

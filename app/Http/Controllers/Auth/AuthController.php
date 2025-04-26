@@ -11,6 +11,7 @@ use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Models\Admin;
 use App\Models\Borrower;
 use App\Models\CreditScore;
+use App\Models\Liveliness;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Traits\OTP;
@@ -82,7 +83,18 @@ class AuthController extends Controller
             // Commit the transaction
             DB::commit();
 
-            $user = User::query()->where('id', $user->id)->with('borrower')->first();
+            $user = User::query()->where('id', $user->id)->first();
+
+            $profile = null;
+            //check $user->role if admin or borrower so join the table
+            if ($user->role == ConstUserRole::BORROWER) {
+                $profile = Borrower::query()->where('user_id', $user->id)->first();
+            }
+
+            if ($user->role == ConstUserRole::ADMIN) {
+                $profile = Admin::query()->where('user_id', $user->id)->first();
+            }
+            $user->profile = $profile;
 
             return $this->successLogin($user, $token, 'Register', 'Register successful');
         } catch (Exception $exception) {
@@ -144,7 +156,24 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $data = $this->verifyOtpCode($user, $request->input('code'));
-        return $this->success($data, 'OTP', 'OTP verified successfully');
+        if (!$data) {
+            return $this->failed(null, 'Fail', 'Invalid OTP', 401);
+        }
+
+        $user = User::query()->where('id', $user->id)->first();
+
+        $profile = null;
+        //check $user->role if admin or borrower so join the table
+        if ($user->role == ConstUserRole::BORROWER) {
+            $profile = Borrower::query()->where('user_id', $user->id)->first();
+        }
+
+        if ($user->role == ConstUserRole::ADMIN) {
+            $profile = Admin::query()->where('user_id', $user->id)->first();
+        }
+        $user->profile = $profile;
+
+        return $this->success($user, 'OTP', 'OTP verified successfully');
     }
 
     //logout function
@@ -168,6 +197,41 @@ class AuthController extends Controller
         $user->telegram_chat_id = $chatId;
         $user->save();
         return $this->success(null, 'Telegram', 'Telegram chat id stored successfully');
+    }
+
+    //liveliness to store array of image 3
+    public function liveliness(Request $request)
+    {
+        $request->validate([
+            'images' => 'required|array',
+            'images.*' => 'nullable', // example validation rules
+        ]);
+
+        $user = auth()->user();
+        $images = $request->file('images');
+        $imagePaths = [];
+
+        // Check if images were uploaded
+        if (empty($images)) {
+            return $this->failed(null,'No images were uploaded', 400);
+        }
+
+        foreach ($images as $image) {
+            $imagePath = $this->uploadImage($image, 'liveliness', 'public');
+            $imagePaths[] = $imagePath;
+
+            // Store each image immediately after upload
+            Liveliness::create([
+                'user_id' => $user->id,
+                'image' => $imagePath,
+            ]);
+        }
+
+        $data = [
+            'success' => true,
+        ];
+
+        return $this->success($data, 'Liveliness images uploaded successfully');
     }
 
 }

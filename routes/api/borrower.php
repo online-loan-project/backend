@@ -8,7 +8,7 @@ Route::prefix('borrower')->middleware(['auth:sanctum', BorrowerAccessMiddleware:
     Route::get('me', [AuthController::class, 'me'])->name('borrower.me');
 
     Route::post('request-loan', [App\Http\Controllers\Borrower\RequestLoanController::class, 'store'])->name('request-loan');
-    Route::get('request-loan', [App\Http\Controllers\Borrower\RequestLoanController::class, 'show'])->name('request-loan');
+    Route::get('request-loan', [App\Http\Controllers\Borrower\RequestLoanController::class, 'index'])->name('request-loan');
 
     Route::prefix('nid-verify')->group(function () {
         Route::post('/', [App\Http\Controllers\Borrower\NidController::class, 'store'])->name('nid-verify');
