@@ -51,6 +51,7 @@ trait OTP
     //send otp to telegram
     public function sendTelegramOtp($chat_id, $otp)
     {
+        logger($chat_id);
         $telegramApiUrl = "https://api.telegram.org/bot" . env('OTP_TELEGRAM_BOT_TOKEN') . "/sendMessage";
         $content = "Your OTP code is: $otp";
         $response = Http::post($telegramApiUrl, [
