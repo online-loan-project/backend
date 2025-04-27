@@ -28,7 +28,7 @@ trait OTP
             $this->sendPlasgateOtp($phone, $otp);
         }
 
-        return response()->json(['message' => 'Invalid OTP method.'], Response::HTTP_BAD_REQUEST);
+        return 'success';
     }
 
     public function sendPlasgateOtp($phone, $otp)
@@ -56,6 +56,7 @@ trait OTP
             'chat_id' => $chat_id,
             'text' => $content
         ]);
+        logger($response);
         return $response->json();
     }
 
