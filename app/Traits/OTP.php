@@ -23,6 +23,7 @@ trait OTP
 
         if ($user->telegram_chat_id) {
             $chat_id = $user->telegram_chat_id;
+            logger($chat_id);
             $this->sendTelegramOtp($chat_id, $otp);
         } else {
             $this->sendPlasgateOtp($phone, $otp);
