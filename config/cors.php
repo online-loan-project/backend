@@ -8,6 +8,7 @@ return [
 
     'allowed_origins' => [
         'https://jorngka-online.netlify.app',
+        '*'
     ],
 
     'allowed_origins_patterns' => [],
