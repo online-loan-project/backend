@@ -234,4 +234,30 @@ class AuthController extends Controller
         return $this->success($data, 'Liveliness images uploaded successfully');
     }
 
+    //change password
+    public function changePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed|different:current_password',
+        ]);
+
+        $user = auth()->user();
+        logger($user);
+        // Check if the current password is correct
+        if (!password_verify($validated['current_password'], $user->password)) {
+            return $this->failed(null, 'Fail', 'Old password is incorrect', 401);
+        }
+
+        try {
+            $user->update([
+                'password' => bcrypt($validated['password']),
+            ]);
+
+            return $this->success($user, 'Change Password', 'Password changed successfully');
+
+        } catch (\Exception $e) {
+            return $this->failed($e->getMessage(), 'Fail', 'Old password is incorrect', 401);
+        }
+    }
 }

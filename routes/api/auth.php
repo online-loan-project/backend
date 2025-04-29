@@ -11,3 +11,6 @@ Route::post('verify/code', [AuthController::class, 'verifyOTP'])->middleware('au
 
 //storeTelegramChatId
 Route::post('telegram-chat-id', [AuthController::class, 'storeTelegramChatId'])->middleware('auth:sanctum')->name('storeTelegramChatId');
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
+//change password
+Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('change-password');
