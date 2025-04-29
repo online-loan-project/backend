@@ -33,7 +33,7 @@ trait OCR
             }
 
             // Detect Cambodia NID (starting with IDKHM)
-            if (preg_match('/IDKHM\w?(\d{9,10})/', $line, $matches)) {
+            if (preg_match('/IDKHM\w?(\d{10,10})/', $line, $matches)) {
                 $data['nid'] = substr($matches[1], 0, 9); // Ensure 9-digit NID
             }
         }

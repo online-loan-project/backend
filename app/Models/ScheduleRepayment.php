@@ -11,6 +11,7 @@ class ScheduleRepayment extends Model
         'repayment_date',
         'emi_amount',
         'status',
+        'paid_date',
         'loan_id'
     ];
 

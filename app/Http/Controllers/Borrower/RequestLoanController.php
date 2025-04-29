@@ -84,17 +84,24 @@ class RequestLoanController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
 
         // Get paginated pending requests
         $requestLoan = RequestLoan::query()
+            ->where('user_id', $user->id)
             ->paginate($perPage);
 
         // Get summary statistics
-        $totalRequests = RequestLoan::count();
-        $totalRequestAmount = RequestLoan::sum('loan_amount');
+        $totalRequests = RequestLoan::query()
+            ->where('user_id', $user->id)
+            ->count();
+        $totalRequestAmount = RequestLoan::query()
+            ->where('user_id', $user->id)
+            ->sum('loan_amount');
 
         $statusCounts = RequestLoan::selectRaw('status, count(*) as count')
+            ->where('user_id', $user->id)
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
@@ -123,7 +130,8 @@ class RequestLoanController extends Controller
         if ($requestLoan->count() > 0) {
             return $this->success($response);
         }
-        return $this->failed('Request Loan not found', 404);
+
+        return $this->success($response,'Request Loan not found', 404);
     }
 
     /**
