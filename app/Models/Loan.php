@@ -44,4 +44,10 @@ class Loan extends Model
         return $this->hasMany(ScheduleRepayment::class);
     }
 
+    //User belongs to user
+    public function borrower()
+    {
+        return $this->belongsTo(Borrower::class);
+    }
+
 }

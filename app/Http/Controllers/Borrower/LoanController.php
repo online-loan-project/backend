@@ -17,7 +17,7 @@ class LoanController extends Controller
     {
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $search = $request->query('search');
-        $status = $request->query('status', 0);
+        $status = $request->query('status', '0');
         $userData = auth()->user();
 
         $loans = Loan::query()
