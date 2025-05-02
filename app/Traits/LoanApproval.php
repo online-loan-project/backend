@@ -40,7 +40,6 @@ Trait LoanApproval
         if (!$interestRate) {
             return 'Interest rate not found';
         }
-        logger($userCredit->id);
         $totalLoanRepayment = $this->calculateLoanRepayment($requestLoan->loan_amount, $interestRate->rate, $requestLoan->loan_duration);
         $loan = Loan::query()->create([
             'request_loan_id' => $requestLoan->id,
@@ -62,7 +61,21 @@ Trait LoanApproval
         $chatId = User::query()->where('id', $requestLoan->user_id)->first();
         $this->sendTelegram(
             $chatId->telegram_chat_id,
-            'Loan Approved',
+            <<<MSG
+✅ Loan Approval Notification
+
+Your loan request has been approved!
+
+Request ID: #$requestLoan->id
+Loan ID: #$loan->id
+Approved Amount: {$requestLoan->loan_amount} $
+Loan Duration: {$requestLoan->loan_duration} months
+Total Repayment Amount: $totalLoanRepayment $
+
+Please check your account for details. The repayment schedule has been created and will be available for review.
+
+Thank you for choosing our service.
+MSG
         );
         return 'Loan approved successfully';
     }

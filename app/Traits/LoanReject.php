@@ -29,10 +29,22 @@ Trait LoanReject
         $requestLoan->status = ConstRequestLoanStatus::REJECTED;
         $requestLoan->rejection_reason = $reason;
         $requestLoan->save();
+
         $chatId = User::query()->where('id', $requestLoan->user_id)->first();
         $this->sendTelegram(
             $chatId->telegram_chat_id,
-            $reason,
+            <<<MSG
+❌ Loan Application Declined
+
+We regret to inform you that your loan request #$requestLoanId has not been approved.
+
+Reason: 
+{$reason}
+
+If you have any questions or would like to discuss this decision further, please contact our support team.
+
+Thank you for considering our services.
+MSG
         );
         return 'Loan rejected successfully';
     }

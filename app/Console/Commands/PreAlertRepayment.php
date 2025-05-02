@@ -69,6 +69,7 @@ Loan ID: #$loanId
 Amount Due: $currency $amount
 Due Date: $dueDate
 Please ensure sufficient funds are available in your account.
+
 This is an automated reminder.
 MSG;
 

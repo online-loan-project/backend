@@ -32,7 +32,6 @@ class AuthController extends Controller
      */
     public function Register(RegisterRequest $request)
     {
-        logger($request->all());
         // Check if the user has already registered recently
         $existingUser = User::query()->where('email', $request->input('email'))->first();
         if ($existingUser) {
@@ -243,7 +242,6 @@ class AuthController extends Controller
         ]);
 
         $user = auth()->user();
-        logger($user);
         // Check if the current password is correct
         if (!password_verify($validated['current_password'], $user->password)) {
             return $this->failed(null, 'Fail', 'Old password is incorrect', 401);

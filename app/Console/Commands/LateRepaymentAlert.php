@@ -69,6 +69,7 @@ Loan ID: #$loanId
 Amount Due: $currency $amount
 Original Due Date: $dueDate
 Your repayment is overdue. Please make the payment as soon as possible to avoid penalties.
+
 This is an automated reminder.
 MSG;
 

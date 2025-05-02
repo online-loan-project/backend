@@ -23,7 +23,6 @@ trait OTP
 
         if ($user->telegram_chat_id) {
             $chat_id = $user->telegram_chat_id;
-            logger($chat_id);
             $this->sendTelegramOtp($chat_id, $otp);
         } else {
             $this->sendPlasgateOtp($phone, $otp);
@@ -51,14 +50,32 @@ trait OTP
     //send otp to telegram
     public function sendTelegramOtp($chat_id, $otp)
     {
-        logger($chat_id);
         $telegramApiUrl = "https://api.telegram.org/bot" . env('OTP_TELEGRAM_BOT_TOKEN') . "/sendMessage";
-        $content = "Your OTP code is: $otp";
+
+        // Escape special characters for MarkdownV2
+        $escapedOtp = str_replace(['.', '-', '(', ')', '!'], ['\.', '\-', '\(', '\)', '\!'], $otp);
+
+        $content = <<<MSG
+🔐 *OTP Verification Code*
+
+Your one\-time password \(OTP\) is\:
+
+`{$escapedOtp}`
+
+*Important*\:
+\- This code expires in 5 minutes
+\- Never share this code with anyone
+\- Our team will never ask for your OTP
+
+If you didn't request this\, please ignore this message or contact support immediately\.
+MSG;
+
         $response = Http::post($telegramApiUrl, [
             'chat_id' => $chat_id,
-            'text' => $content
+            'text' => $content,
+            'parse_mode' => 'MarkdownV2'
         ]);
-        logger($response);
+
         return $response->json();
     }
 

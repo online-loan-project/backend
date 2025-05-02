@@ -19,6 +19,7 @@ trait TelegramNotification
             'chat_id' => $chat_id,
             'text' => $content
         ]);
+
         return $response->json();
     }
 

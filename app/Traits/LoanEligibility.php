@@ -82,7 +82,26 @@ trait LoanEligibility
             'status' => ConstRequestLoanStatus::ELIGIBLE,
             'approved_amount' => $approvedAmount // Assuming this column exists
         ]);
-        $this->sendTelegram($user->telgram_chat_id, "Loan eligibility check completed. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)");
+        $this->sendTelegram(
+            $user->telegram_chat_id,
+            <<<MSG
+🏦 Loan Approval Notification
+
+✅ Eligibility Check Completed
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Approved Amount: {$approvedAmount} $
+▫️ Approval Percentage: {$approvedPercentage}%  
+
+💡 Next Steps:
+- Review your loan terms  
+- Funds will be disbursed within 24h of acceptance  
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
+
         return "Eligible. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)";
     }
 
