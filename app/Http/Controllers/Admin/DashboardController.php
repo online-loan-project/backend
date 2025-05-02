@@ -107,13 +107,22 @@ class DashboardController extends Controller
         $number_loan_stat = array_values($ranges);
 
         $topBorrowers = \App\Models\User::query()
-            ->withCount(['loans' => function ($query) {
-                $query->whereMonth('created_at', date('m'));
+            ->with(['borrower' => function ($query) {
+                $query->select(['id', 'user_id', 'first_name', 'last_name']);
             }])
+            ->withCount(['loans' => function ($query) {
+            }])
+            ->withSum(['loans' => function ($query) {
+            }], 'loan_repayment') // Assuming 'amount' is the loan amount column
             ->where('role', '!=', 1)
-            ->orderByDesc('loans_count')
+            ->orderByDesc('loans_count') // or orderByDesc('loans_sum_amount') if sorting by total amount
             ->limit(5)
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'name', 'email'])
+            ->each(function ($user, $index) {
+                $user->rank = $index + 1;
+                $user->name = $user->borrower?->first_name . ' ' . $user->borrower?->last_name;
+                $user->total_loans_amount = $user->loans_sum_amount ?? 0; // Assign the sum
+            });
 
         $data = [
             //card
