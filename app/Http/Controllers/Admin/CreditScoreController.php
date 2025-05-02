@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CreditScoreRequest;
+use App\Http\Resources\Admin\CreditScoreResource;
 use App\Models\CreditScore;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -16,7 +17,13 @@ class CreditScoreController extends Controller
     public function index()
     {
         // show list user with credit score
-        $user = CreditScore::query()->with('user')->get();
+        $user = CreditScore::query()
+            ->with(['user.borrower'])
+            ->whereHas('user', function($query) {
+                $query->where('role', '!=', 1);
+            })
+            ->get();
+
         if ($user->isEmpty()) {
             return $this->failed('Users not found', 404);
         }
@@ -24,7 +31,24 @@ class CreditScoreController extends Controller
         if(!$user){
             return $this->failed('User not found', 404);
         }
-        return $this->success($user);
+
+        //$total_new_user is user that have credit score = 50
+        $total_new_user = CreditScore::query()
+            ->where('score', 50)
+            ->whereHas('user', function($query) {
+                $query->where('role', '!=', 1);
+            })
+            ->count();
+
+        $data = [
+            'data' => CreditScoreResource::collection($user),
+            'summary' => [
+                'total_user' => $user->count(),
+                'total_new_user' => $total_new_user,
+            ],
+        ];
+
+        return $this->success($data, 'Credit score list', 'Credit score list');
     }
     //reset credit score by user id
     public function resetCreditScore($id)
