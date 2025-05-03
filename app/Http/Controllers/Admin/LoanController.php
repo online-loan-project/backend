@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Constants\ConstLoanRepaymentStatus;
+use App\Constants\ConstLoanStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\LoanResource;
 use App\Models\Loan;
 use App\Models\ScheduleRepayment;
 use App\Traits\ScheduleRepayments;
@@ -17,9 +19,13 @@ class LoanController extends Controller
     {
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $search = $request->query('search');
+        $active = $request->query('active');
+        $active = $active == 'unpaid' ? ConstLoanStatus::UNPAID : ($active == 'paid' ? ConstLoanStatus::PAID : null);
 
         $loans = Loan::query()
-            ->with('user', ) //join with user
+            //status with active
+            ->where('status', $active)
+            ->with('user.borrower') //join with user
             ->with('scheduleRepayment')
             //join with user search phone
             ->whereHas('user', function ($query) use ($search) {
@@ -41,7 +47,7 @@ class LoanController extends Controller
             ->count();
 
         $response = [
-            'data' => $loans->items(),
+            'data' => LoanResource::collection($loans),
             'pagination' => [
                 'total' => $loans->total(),
                 'per_page' => $loans->perPage(),

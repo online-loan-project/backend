@@ -20,10 +20,28 @@ class BorrowerController extends Controller
         $search = $request->query('search');
 
         $borrower = Borrower::query()
+            ->with('user')
             ->where('user_id', 'like', "%$search%")
             ->paginate($perPage);
-        return $this->success($borrower);
 
+        //count active and inactive borrowers
+        $activeCount = Borrower::whereHas('user', function ($query) {
+            $query->where('status', 1);
+        })->count();
+        $inactiveCount = Borrower::whereHas('user', function ($query) {
+            $query->where('status', 0);
+        })->count();
+
+        //count total borrowers
+        $totalCount = Borrower::count();
+
+        //return response
+        return $this->success([
+            'borrowers' => $borrower,
+            'active_count' => $activeCount,
+            'inactive_count' => $inactiveCount,
+            'total_count' => $totalCount,
+        ]);
 
     }
 

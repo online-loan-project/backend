@@ -6,6 +6,7 @@ use App\Constants\ConstRequestLoanStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RejectReasonRequest;
 use App\Http\Requests\Borrower\RequestLoanRequest;
+use App\Http\Resources\Admin\RequestLoanResource;
 use App\Models\RequestLoan;
 use App\Traits\LoanApproval;
 use App\Traits\LoanReject;
@@ -21,11 +22,83 @@ class RequestLoanController extends Controller
     {
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $search = $request->query('search');
+        $status = $request->query('status');
+        $active = $request->query('active', false); // Default to false if not provided
+
+        // Handle status filtering
+        $statusesToFilter = [];
+
+        if ($active) {
+            // If active is true, show only pending and eligible
+            $statusesToFilter = [
+                ConstRequestLoanStatus::PENDING,
+                ConstRequestLoanStatus::ELIGIBLE
+            ];
+        } elseif ($status) {
+            // If specific status is provided, use that
+            $statusesToFilter = is_array($status) ? $status : [$status];
+        } else {
+            // Default case (when neither active nor status is provided)
+            // You might want to show all statuses or some other default
+            // Currently showing approved and rejected as per original code
+            $statusesToFilter = [
+                ConstRequestLoanStatus::APPROVED,
+                ConstRequestLoanStatus::REJECTED,
+            ];
+        }
 
         $requestLoan = RequestLoan::query()
-            ->where('id', 'like', "%$search%")
+            ->when(!empty($statusesToFilter), function ($query) use ($statusesToFilter) {
+                $query->whereIn('status', $statusesToFilter);
+            })
+            ->with(['user.borrower', 'nidInformation', 'incomeInformation'])
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('phone', 'like', '%' . $search . '%');
+                });
+            })
             ->paginate($perPage);
-        return $this->success($requestLoan);
+
+        // Summary statistics (consider filtering them by the same status criteria)
+        $totalRequests = RequestLoan::when(!empty($statusesToFilter), function ($query) use ($statusesToFilter) {
+            $query->whereIn('status', $statusesToFilter);
+        })
+            ->count();
+
+        $totalRequestAmount = RequestLoan::when(!empty($statusesToFilter), function ($query) use ($statusesToFilter) {
+            $query->whereIn('status', $statusesToFilter);
+        })
+            ->sum('loan_amount');
+
+        $statusCounts = RequestLoan::selectRaw('status, count(*) as count')
+            ->when(!empty($statusesToFilter), function ($query) use ($statusesToFilter) {
+                $query->whereIn('status', $statusesToFilter);
+            })
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $response = [
+            'data' => RequestLoanResource::collection($requestLoan),
+            'pagination' => [
+                'total' => $requestLoan->total(),
+                'per_page' => $requestLoan->perPage(),
+                'current_page' => $requestLoan->currentPage(),
+                'last_page' => $requestLoan->lastPage(),
+            ],
+            'summary' => [
+                'total_requests' => $totalRequests,
+                'total_request_amount' => $totalRequestAmount,
+                'status_counts' => [
+                    'pending' => $statusCounts[ConstRequestLoanStatus::PENDING] ?? 0,
+                    'eligible' => $statusCounts[ConstRequestLoanStatus::ELIGIBLE] ?? 0,
+                    'approved' => $statusCounts[ConstRequestLoanStatus::APPROVED] ?? 0,
+                    'rejected' => $statusCounts[ConstRequestLoanStatus::REJECTED] ?? 0,
+                ]
+            ]
+        ];
+
+        return $this->success($response);
     }
 
     // Request loan details by id
