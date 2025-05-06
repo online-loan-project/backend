@@ -20,23 +20,81 @@ trait LoanEligibility
         $user = User::query()->find($userId);
         $borrower = Borrower::where('user_id', $userId)->first();
         if (!$borrower) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+💡 Reason : Borrower not found
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Borrower not found';
         }
         // Retrieve the requested loan details
         $requestLoan = RequestLoan::find($requestLoanId);
         if (!$requestLoan) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Loan request not found
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Loan request not found';
         }
 
         // Retrieve the user's income information
         $incomeInfo = IncomeInformation::where('request_loan_id', $requestLoanId)->first();
         if (!$incomeInfo) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Income information not found
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Income information not found';
         }
 
         // Retrieve the user's credit score
         $userCredit = CreditScore::where('user_id', $userId)->first();
         if (!$userCredit) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Credit information not found
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Credit information not found';
         }
 
@@ -44,11 +102,41 @@ trait LoanEligibility
 //       1. Age (must be above a minimum threshold, e.g., 21-60 years) If age < 21 or age > 60: Not Eligible
         $borrower_age = date_diff(date_create($borrower->dob), date_create('now'))->y;
         if ($borrower_age < 21 || $borrower_age > 60) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Not Eligible (Invalid age)
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Not Eligible (Invalid age)';
         }
 
         // 2. Employment Type
         if ($incomeInfo->employee_type == 'Unemployed') {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Not Eligible (Unemployed)
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Not Eligible (Unemployed)';
         }
 
@@ -68,6 +156,21 @@ trait LoanEligibility
 
         // If approvedPercentage is 0, reject
         if ($approvedPercentage === 0) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Your credit score is too low (less than 20)
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
             return 'Your credit score is too low (less than 20)';
         }
 
@@ -75,6 +178,22 @@ trait LoanEligibility
         $approvedAmount = ($approvedPercentage / 100) * $requestLoan->loan_amount;
 //      4. Income loan_amount ≤ 5 * income ( Loan should not bigger than 5 times the income )
         if ($approvedAmount > (5 * $incomeInfo->income)) {
+            $this->sendTelegram(
+                $user->telegram_chat_id,
+                <<<MSG
+🏦 Loan Not Eligibility Notification
+
+❌  Eligibility Check Not Complete
+
+▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+
+💡 Reason : Loan amount is too high
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
+
             return 'Loan amount is too high';
         }
         // Update loan status and optionally save approved amount
