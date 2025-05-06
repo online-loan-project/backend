@@ -7,10 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Borrower;
 use App\Models\NidInformation;
 use App\Models\RequestLoan;
+use App\Traits\TelegramNotification;
 use Illuminate\Http\Request;
 
 class NidController extends Controller
 {
+    use TelegramNotification;
 
     // store nid information
     public function store(Request $request)
@@ -20,6 +22,8 @@ class NidController extends Controller
             'nid_image' => 'required',
         ]);
 
+        $userData = auth()->user(); // Get the authenticated user
+
         // Check if the file is an image
         if (!$request->file('nid_image')->isValid()) {
             return $this->failed('Invalid image file.', 422);
@@ -27,7 +31,47 @@ class NidController extends Controller
 
         $data = $this->extractOcrData($request->file('nid_image')); // Extract OCR data
 
-        $userData = auth()->user(); // Get the authenticated user
+        // if $data no nid number
+        if (empty($data['nid'])) {
+            $this->sendTelegram(
+                $userData->telegram_chat_id,
+                <<<MSG
+❌  NID number not found in the image.
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
+            return $this->failed('NID number not found in the image.', 422);
+        }
+
+        //if first name and last name null
+        if (empty($data['last_name'])) {
+            $this->sendTelegram(
+                $userData->telegram_chat_id,
+                <<<MSG
+❌  Last Name not found in the image.
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
+            return $this->failed('Last Name not found in the image.', 422);
+        }
+
+        if (empty($data['first_name'])) {
+            $this->sendTelegram(
+                $userData->telegram_chat_id,
+                <<<MSG
+❌  First Name not found in the image.
+
+📞 Contact support if you have any questions.  
+
+This is an automated message.  
+MSG);
+            return $this->failed('First Name not found in the image.', 422);
+        }
+
         if (!$userData) {
             return $this->failed('User not found.', 404);
         }
