@@ -48,7 +48,7 @@ class NidController extends Controller
             $imagePath = $this->uploadImage($image, 'nid_info', 'public');
         }
 
-
+        logger('NID Information:', $data);
         // store nid number in the database
         $nidInformation = NidInformation::query()->create([
             'nid_number' => $data['nid'],

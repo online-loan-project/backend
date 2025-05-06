@@ -38,6 +38,7 @@ trait OCR
             }
         }
 
+        logger('Scan : ', $data);
         return $data;
     }
 }
