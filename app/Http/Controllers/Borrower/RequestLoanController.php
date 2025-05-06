@@ -68,6 +68,10 @@ class RequestLoanController extends Controller
 
         // Check loan eligibility
         $eligibility = $this->checkLoanEligibility($user->id, $requestLoan->id);
+        logger('Loan Eligibility:', [
+            'user_id' => $user->id,
+            'eligibility' => $eligibility,
+        ]);
 
         $data = [
             'request_loan' => $requestLoan,
