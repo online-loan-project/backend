@@ -11,6 +11,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.9",
+        "socialiteproviders/google": "^4.1",
         "thiagoalessio/tesseract_ocr": "^2.13"
     },
     "require-dev": {
