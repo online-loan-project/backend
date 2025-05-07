@@ -12,7 +12,7 @@ class RequestLoanRequest extends FormRequest
         return [
             //return request_loan
             'loan_amount' => ['required', 'numeric'],
-            'loan_duration' => ['required', 'numeric'],
+            'loan_duration' => ['required', 'integer', 'between:1,12'],
             'loan_type' => ['required', 'string'],
 
             //nid_information

@@ -22,6 +22,6 @@ Route::prefix('borrower')->middleware(['auth:sanctum', BorrowerAccessMiddleware:
     });
     //group credit score routes
     Route::prefix('dashboard')->group(function () {
-        Route::get('/', [App\Http\Controllers\Borrower\DashboardController::class, 'creditScore'])->name('credit-score');
+        Route::get('/', [App\Http\Controllers\Borrower\DashboardController::class, 'index'])->name('credit-score');
     });
 });
