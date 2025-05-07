@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\ConstUserStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Borrower;
 use App\Models\User;
@@ -14,35 +15,38 @@ class BorrowerController extends Controller
      * Display a listing of the resource.
      */
     use BaseApiResponse;
-    public function index( Request $request)
+    public function index(Request $request)
     {
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $search = $request->query('search');
 
-        $borrower = Borrower::query()
-            ->with('user')
-            ->where('user_id', 'like', "%$search%")
-            ->paginate($perPage);
+        $borrowerQuery = Borrower::query()
+            ->with(['user'])
+            ->whereHas('user', function ($query) use ($search) {
+                if ($search) {
+                    $query->where('phone', 'like', '%' . $search . '%');
+                }
+            });
 
-        //count active and inactive borrowers
+        $borrowers = $borrowerQuery->paginate($perPage);
+
+        // Count active and inactive borrowers (without search filter)
         $activeCount = Borrower::whereHas('user', function ($query) {
             $query->where('status', 1);
         })->count();
+
         $inactiveCount = Borrower::whereHas('user', function ($query) {
             $query->where('status', 0);
         })->count();
 
-        //count total borrowers
         $totalCount = Borrower::count();
 
-        //return response
         return $this->success([
-            'borrowers' => $borrower,
+            'borrowers' => $borrowers,
             'active_count' => $activeCount,
             'inactive_count' => $inactiveCount,
             'total_count' => $totalCount,
         ]);
-
     }
 
 
@@ -62,10 +66,15 @@ class BorrowerController extends Controller
    //update status
     public function borrowerStatus(Request $request, string $id)
     {
+        //validate status
+        $request->validate([
+            'status' => 'required',
+        ]);
+
         $borrower = Borrower::find($id);
         if ($borrower) {
            $borrowerUser = User::query()->where('id', $borrower->user_id)->first();
-           $borrowerUser->status = (int)$request->status;
+           $borrowerUser->status = $request->status;
            $borrowerUser->save(); //save the updated status
             return $this->success($borrowerUser);
         }

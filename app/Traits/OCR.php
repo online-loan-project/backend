@@ -28,8 +28,8 @@ trait OCR
         foreach ($lines as $line) {
             // Detect MRZ name format
             if (preg_match('/([A-Z]+)<<([A-Z]+)/', $line, $matches)) {
-                $data['last_name'] = str_replace('<', ' ', $matches[2]);
-                $data['first_name'] = str_replace('<', ' ', $matches[1]);
+                $data['first_name'] = str_replace('<', ' ', $matches[2]);
+                $data['last_name'] = str_replace('<', ' ', $matches[1]);
             }
 
             // Detect Cambodia NID (starting with IDKHM)

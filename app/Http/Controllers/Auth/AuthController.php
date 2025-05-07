@@ -114,7 +114,7 @@ class AuthController extends Controller
         $user = User::query()->where('email', $request->input('email'))->first();
 
         if (!$user || !password_verify($request->input('password'), $user->password)) {
-            return $this->failed(null, 'Fail', 'Invalid credentials', 401);
+            return $this->failed(null, 'Fail', 'Invalid email or password', 401);
         }
 
         $profile = null;
