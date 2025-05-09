@@ -6,7 +6,9 @@ use App\Constants\ConstUserRole;
 use App\Models\Admin;
 use App\Models\Borrower;
 use App\Traits\BaseApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\Controller;
@@ -49,11 +51,17 @@ class GoogleAuthController extends Controller
                     'first_name' => $name,
                     'last_name' => $name,
                     'gender' => 'N/A',
-                    'dob' => null,
-                    'address' => null,
+                    'dob' => Carbon::now(),
+                    'address' => 'N/A',
                     'image' => $image,
                 ]);
+            } else {
+                if (is_null($user->phone_verified_at)) {
+                    $user->phone_verified_at = now(); // Automatically verify the email
+                    $user->save();
+                }
             }
+
             Auth::login($user);
             $token = $user->createToken('token_base_name')->plainTextToken;
 
@@ -105,8 +113,8 @@ class GoogleAuthController extends Controller
                     'first_name' => $name,
                     'last_name' => $name,
                     'gender' => 'N/A',
-                    'dob' => null,
-                    'address' => null,
+                    'dob' => Carbon::now(),
+                    'address' => 'N/A',
                     'image' => $image,
                 ]);
             } else {
