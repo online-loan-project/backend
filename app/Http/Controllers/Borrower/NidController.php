@@ -25,8 +25,8 @@ class NidController extends Controller
         $userData = auth()->user(); // Get the authenticated user
 
         // Check if the file is an image
-        if (!$request->file('nid_image')->isValid()) {
-            return $this->failed('Invalid image file.', 422);
+        if (!$request->file('nid_image')) {
+            return $this->failed(null,'Image Error', 'Invalid image file.', 422);
         }
 
         $data = $this->extractOcrData($request->file('nid_image')); // Extract OCR data
@@ -42,7 +42,7 @@ class NidController extends Controller
 
 This is an automated message.  
 MSG);
-            return $this->failed('NID number not found in the image.', 422);
+            return $this->failed(null,'OCR Error', 'NID number not found in the image. Please input a clear image.', 422);
         }
 
         //if first name and last name null
@@ -56,7 +56,7 @@ MSG);
 
 This is an automated message.  
 MSG);
-            return $this->failed('Last Name not found in the image.', 422);
+            return $this->failed(null,'OCR Error', 'Last Name not found in the image. Please input a clear image.', 422);
         }
 
         if (empty($data['first_name'])) {
@@ -69,21 +69,22 @@ MSG);
 
 This is an automated message.  
 MSG);
-            return $this->failed('First Name not found in the image.', 422);
+            return $this->failed(null,'OCR Error', 'First Name not found in the image. Please input a clear image.', 422);
         }
 
         if (!$userData) {
-            return $this->failed('User not found.', 404);
+            return $this->failed(null,'Borrower', 'User not found.', 404);
         }
         // get borrower data from user_id
         $borrowerData = Borrower::query()->where('user_id', $userData->id)->first();
         if (!$borrowerData) {
-            return $this->failed('Borrower not found.', 404);
+            return $this->failed(null,'Borrower', 'Borrower not found.', 404);
         }
 
         // match the extracted data with the borrower data only first_name, last_name
         if (strtolower($data['first_name']) !== strtolower($borrowerData->first_name) || strtolower($data['last_name']) !== strtolower($borrowerData->last_name)) {
-            return $this->failed(null ,'NID information does not match with the borrower data.', null, 422);
+
+            return $this->failed(null ,'NID Error','NID information does not match with the borrower data.', null, 422);
         }
 
         $image = $request->file('nid_image');
@@ -101,7 +102,11 @@ MSG);
             'request_loan_id' => 0,
         ]);
 
-        return $this->success($nidInformation, 'NID information extracted successfully.');
+        //$nidInformation first name last name
+        $nidInformation->first_name = $data['first_name'];
+        $nidInformation->last_name = $data['last_name'];
+
+        return $this->success($nidInformation, 'NID Success','NID information extracted successfully.');
     }
     // show nid information
     public function show(Request $request)

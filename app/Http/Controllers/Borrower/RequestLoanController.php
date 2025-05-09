@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Borrower;
 use App\Constants\ConstRequestLoanStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Borrower\RequestLoanRequest;
+use App\Models\CreditScore;
 use App\Models\IncomeInformation;
 use App\Models\NidInformation;
 use App\Models\RequestLoan;
@@ -26,10 +27,10 @@ class RequestLoanController extends Controller
         //query request loan status pending and eligibility for current user
         $requestLoan = RequestLoan::query()
             ->where('user_id', $user->id)
-            ->whereIn('status', [ConstRequestLoanStatus::PENDING, ConstRequestLoanStatus::ELIGIBLE])
+            ->whereIn('status', [ConstRequestLoanStatus::ELIGIBLE])
             ->first();
         if($requestLoan){
-            return $this->failed('You already have a pending request', 400);
+            return $this->failed(null,'Already have loan', 'You already have a eligible request', 400);
         }
 
         $nid_image = $request->file('nid_image');
@@ -110,6 +111,10 @@ class RequestLoanController extends Controller
             ->pluck('count', 'status')
             ->toArray();
 
+        $creditScore = CreditScore::query()
+            ->where('user_id', $user->id)
+            ->first();
+
         // Prepare the response data
         $response = [
             'data' => $requestLoan->items(),
@@ -122,6 +127,7 @@ class RequestLoanController extends Controller
             'summary' => [
                 'total_requests' => $totalRequests,
                 'total_request_amount' => $totalRequestAmount,
+                'credit_score' => $creditScore?->score,
                 'status_counts' => [
                     'pending' => $statusCounts['pending'] ?? 0,
                     'eligible' => $statusCounts['eligible'] ?? 0,

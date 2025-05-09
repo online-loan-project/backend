@@ -9,4 +9,6 @@ class ConstUserStatus
     const ACTIVE = 1;
     const INACTIVE = 0;
 
+    //getValues
+
 }

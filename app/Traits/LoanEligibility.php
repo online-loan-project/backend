@@ -204,7 +204,7 @@ MSG);
         $this->sendTelegram(
             $user->telegram_chat_id,
             <<<MSG
-🏦 Loan Approval Notification
+🏦 Loan Eligible Notification
 
 ✅ Eligibility Check Completed
 
