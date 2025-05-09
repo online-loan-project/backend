@@ -16,8 +16,7 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanct
 //change password
 Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('change-password');
 
-// Redirect to Google for authentication
-Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('google');
+
 // Handle the callback from Google
 Route::get('auth/callback/google', [GoogleAuthController::class, 'handleGoogleCallback'])->name('callback.google');
 Route::post('callback/google', [GoogleAuthController::class, 'handleGoogleCode']);
