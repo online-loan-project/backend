@@ -54,6 +54,7 @@ class GoogleAuthController extends Controller
                     'image' => $image,
                 ]);
             }
+            Auth::login($user);
             $token = $user->createToken('token_base_name')->plainTextToken;
 
             $profile = null;
@@ -115,6 +116,7 @@ class GoogleAuthController extends Controller
                     $user->save();
                 }
             }
+            Auth::login($user);
 
             $token = $user->createToken('token_base_name')->plainTextToken;
 
