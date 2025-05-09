@@ -91,30 +91,47 @@ class GoogleAuthController extends Controller
             if (!$user) {
                 // User doesn't exist, create a new one
                 $request = [
-                    'name' => $name,
                     'email' => $email,
                     'password' => $password,
-                    'email_verified_at' => now(), // Automatically verify the email
+                    'phone' => 0120000000,
+                    'phone_verified_at' => now(), // Automatically verify the email
                 ];
                 $user = User::query()->create($request);
+
+                Borrower::query()->create([
+                    'user_id' => $user->id,
+                    'first_name' => $name,
+                    'last_name' => $name,
+                    'gender' => null,
+                    'dob' => null,
+                    'address' => null,
+                    'image' => $image,
+                ]);
             } else {
                 // Optionally, mark the email as verified if user exists
-                if (is_null($user->email_verified_at)) {
-                    $user->email_verified_at = now(); // Automatically verify the email
+                if (is_null($user->phone_verified_at)) {
+                    $user->phone_verified_at = now(); // Automatically verify the email
                     $user->save();
                 }
             }
 
-            Auth::login($user);
-
             $token = $user->createToken('token_base_name')->plainTextToken;
 
-            $google = [
-                'user' => $user,
-                'token' => $token,
-            ];
+            $profile = null;
+            //check $user->role if admin or borrower so join the table
+            if ($user->role == ConstUserRole::BORROWER) {
+                $profile = Borrower::query()->where('user_id', $user->id)->first();
+            }
 
-            return $this->successLogin($google, $token , 'Login', 'Login successful');
+            if ($user->role == ConstUserRole::ADMIN) {
+                $profile = Admin::query()->where('user_id', $user->id)->first();
+            }
+
+            $user->profile = $profile;
+            $user->role = (int) $user->role;
+            $user->status = (int) $user->status;
+
+            return $this->successLogin($user, $token , 'Login', 'Login successful');
 
         } catch (\Exception $e) {
             return $this->failed($e->getMessage(), 'Error', 'Error form server');
