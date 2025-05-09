@@ -84,6 +84,7 @@ class GoogleAuthController extends Controller
             $googleUser = Socialite::driver('google')->stateless()->user();
             $name = $googleUser->getName();
             $email = $googleUser->getEmail();
+            $image = $googleUser->getAvatar();
             $password = Hash::make($googleUser->getId() . $googleUser->getEmail() . $googleUser->getName());
 
             $user = User::where('email', $email)->first();
