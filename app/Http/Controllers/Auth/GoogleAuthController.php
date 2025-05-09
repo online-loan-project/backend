@@ -35,7 +35,7 @@ class GoogleAuthController extends Controller
                 $request = [
                     'email' => $email,
                     'password' => $password,
-                    'phone' => 0120000000,
+                    'phone' => rand(1000000000, 9999999999),
                     'phone_verified_at' => now(), // Automatically verify the email
                 ];
                 $user = User::query()->create($request);
@@ -97,7 +97,7 @@ class GoogleAuthController extends Controller
                 $request = [
                     'email' => $email,
                     'password' => $password,
-                    'phone' => 0120000000,
+                    'phone' => random_int(1000000000, 9999999999),
                     'phone_verified_at' => now(), // Automatically verify the email
                 ];
                 $user = User::query()->create($request);
