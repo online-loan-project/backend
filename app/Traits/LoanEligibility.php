@@ -29,10 +29,11 @@ trait LoanEligibility
 
 💡 Reason : Borrower not found
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Borrower not found';
         }
         // Retrieve the requested loan details
@@ -45,14 +46,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Loan request not found
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Loan request not found';
         }
 
@@ -66,14 +68,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Income information not found
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Income information not found';
         }
 
@@ -87,14 +90,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Credit information not found
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Credit information not found';
         }
 
@@ -109,14 +113,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Not Eligible (Invalid age)
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Not Eligible (Invalid age)';
         }
 
@@ -129,14 +134,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Not Eligible (Unemployed)
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Not Eligible (Unemployed)';
         }
 
@@ -163,14 +169,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Your credit score is too low (less than 20)
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
             return 'Your credit score is too low (less than 20)';
         }
 
@@ -185,14 +192,15 @@ MSG);
 
 ❌  Eligibility Check Not Complete
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 
 💡 Reason : Loan amount is too high
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
 
             return 'Loan amount is too high';
         }
@@ -208,20 +216,35 @@ MSG);
 
 ✅ Eligibility Check Completed
 
-▫️ Requested Amount: {$requestLoan->loan_amount} $ 
+▫️ Requested Amount: {$requestLoan->loan_amount} $
 ▫️ Approved Amount: {$approvedAmount} $
-▫️ Approval Percentage: {$approvedPercentage}%  
+▫️ Approval Percentage: {$approvedPercentage}%
 
 💡 Next Steps:
-- Review your loan terms  
-- Funds will be disbursed within 24h of acceptance  
+- Review your loan terms
+- Funds will be disbursed within 24h of acceptance
 
-📞 Contact support if you have any questions.  
+📞 Contact support if you have any questions.
 
-This is an automated message.  
+This is an automated message.
 MSG);
 
         return "Eligible. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)";
+    }
+
+    public function checkRequestLoanNotEligible(int $userId, int $requestLoanId)
+    {
+        $user = User::query()->find($userId);
+        $requestLoan = RequestLoan::find($requestLoanId);
+        if (!$requestLoan) {
+            return 'Loan request not found';
+        }
+        //set loan to not eligible
+        $requestLoan->update([
+            'status' => ConstRequestLoanStatus::NOT_ELIGIBLE,
+        ]);
+        return 'Loan request not eligible';
+
     }
 
 
