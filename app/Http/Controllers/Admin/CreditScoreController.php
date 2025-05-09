@@ -25,11 +25,11 @@ class CreditScoreController extends Controller
             ->get();
 
         if ($user->isEmpty()) {
-            return $this->failed('Users not found', 404);
+            return $this->failed(null,'No Users', 'Users not found', 404);
         }
 
         if(!$user){
-            return $this->failed('User not found', 404);
+            return $this->failed(null,'No Users', 'Users not found', 404);
         }
 
         //$total_new_user is user that have credit score = 50
@@ -59,7 +59,7 @@ class CreditScoreController extends Controller
             $creditScore->save(); //save the updated credit score
             return $this->success($creditScore);
         }
-        return $this->failed('Credit score not found', 404);
+        return $this->failed(null, 'Credit score not found', 'Credit score not found', 404);
     }
     //update credit score by user id
     public function updateCreditScore(CreditScoreRequest $request, $id)
@@ -71,7 +71,7 @@ class CreditScoreController extends Controller
             $creditScore->save(); //save the updated credit score
             return $this->success($creditScore);
         }
-        return $this->failed('Credit score not found', 404);
+        return $this->failed(null, 'Credit score not found', 'Credit score not found', 404);
     }
 
 }
