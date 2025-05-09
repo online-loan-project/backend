@@ -55,7 +55,7 @@ class CreditScoreController extends Controller
     {
         $creditScore = CreditScore::query()->where('user_id', $id)->first();
         if ($creditScore) {
-            $creditScore->score = 0;
+            $creditScore->score = 50;
             $creditScore->save(); //save the updated credit score
             return $this->success($creditScore);
         }

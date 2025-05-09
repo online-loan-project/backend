@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'Login'])->name('login');
@@ -14,3 +15,9 @@ Route::post('telegram-chat-id', [AuthController::class, 'storeTelegramChatId'])-
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
 //change password
 Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('change-password');
+
+// Redirect to Google for authentication
+Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('google');
+// Handle the callback from Google
+Route::get('auth/callback/google', [GoogleAuthController::class, 'handleGoogleCallback'])->name('callback.google');
+Route::post('callback/google', [GoogleAuthController::class, 'handleGoogleCode']);

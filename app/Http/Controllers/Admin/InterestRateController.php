@@ -18,7 +18,7 @@ class InterestRateController extends Controller
     public function create(Request $request)
     {
         $request->validate([
-            'rate' => 'required|numeric',
+            'rate' => 'required|numeric|min:0|max:100',
         ]);
         $interestRate = InterestRate::create([
             'rate' => $request->input('rate'),
