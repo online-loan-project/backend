@@ -64,6 +64,7 @@ class GoogleAuthController extends Controller
 
             Auth::login($user);
             $token = $user->createToken('token_base_name')->plainTextToken;
+            $user = User::query()->where('email', $email)->first();
 
             $profile = null;
             //check $user->role if admin or borrower so join the table
@@ -127,7 +128,7 @@ class GoogleAuthController extends Controller
             Auth::login($user);
 
             $token = $user->createToken('token_base_name')->plainTextToken;
-
+            $user = User::query()->where('email', $email)->first();
             $profile = null;
             //check $user->role if admin or borrower so join the table
             if ($user->role == ConstUserRole::BORROWER) {
