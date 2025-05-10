@@ -6,6 +6,7 @@ use App\Constants\ConstUserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Borrower;
+use App\Models\CreditScore;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use Carbon\Carbon;
@@ -48,6 +49,13 @@ class GoogleAuthController extends Controller
                     'dob' => Carbon::now(),
                     'address' => 'N/A',
                     'image' => $image,
+                ]);
+
+                //give the user a default credit score
+                CreditScore::query()->create([
+                    'user_id' => $user->id,
+                    'score' => 50,
+                    'status' => 1,
                 ]);
             } else {
                 if (is_null($user->phone_verified_at)) {
@@ -110,6 +118,13 @@ class GoogleAuthController extends Controller
                     'dob' => Carbon::now(),
                     'address' => 'N/A',
                     'image' => $image,
+                ]);
+
+                //give the user a default credit score
+                CreditScore::query()->create([
+                    'user_id' => $user->id,
+                    'score' => 50,
+                    'status' => 1,
                 ]);
             } else {
                 // Optionally, mark the email as verified if user exists
