@@ -10,6 +10,9 @@ Route::post('liveliness', [AuthController::class, 'liveliness'])->middleware('au
 Route::get('send/code', [AuthController::class, 'sendVerify'])->middleware('auth:sanctum')->name('sendVerify');
 Route::post('verify/code', [AuthController::class, 'verifyOTP'])->middleware('auth:sanctum')->name('verifyCode');
 
+//update profile
+Route::post('profile/update', [AuthController::class, 'updateProfile'])->middleware('auth:sanctum')->name('updateProfile');
+
 //storeTelegramChatId
 Route::post('telegram-chat-id', [AuthController::class, 'storeTelegramChatId'])->middleware('auth:sanctum')->name('storeTelegramChatId');
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');

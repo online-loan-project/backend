@@ -33,7 +33,7 @@ trait LoanEligibility
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Borrower not found');
             return 'Borrower not found';
         }
         // Retrieve the requested loan details
@@ -54,7 +54,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Loan request not found');
             return 'Loan request not found';
         }
 
@@ -76,7 +76,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Income information not found');
             return 'Income information not found';
         }
 
@@ -98,7 +98,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Credit information not found');
             return 'Credit information not found';
         }
 
@@ -121,7 +121,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Invalid age');
             return 'Not Eligible (Invalid age)';
         }
 
@@ -142,7 +142,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Unemployed');
             return 'Not Eligible (Unemployed)';
         }
 
@@ -177,7 +177,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Your credit score is too low (less than 20)');
             return 'Your credit score is too low (less than 20)';
         }
 
@@ -200,7 +200,7 @@ MSG);
 
 This is an automated message.
 MSG);
-            $this->checkRequestLoanNotEligible($userId, $requestLoanId);
+            $this->checkRequestLoanNotEligible($userId, $requestLoanId, 'Loan amount is too high');
 
             return 'Loan amount is too high';
         }
@@ -232,7 +232,7 @@ MSG);
         return "Eligible. Approved amount: {$approvedAmount} ({$approvedPercentage}% of requested)";
     }
 
-    public function checkRequestLoanNotEligible(int $userId, int $requestLoanId)
+    public function checkRequestLoanNotEligible(int $userId, int $requestLoanId, $reason = null)
     {
         $user = User::query()->find($userId);
         $requestLoan = RequestLoan::find($requestLoanId);
@@ -242,6 +242,7 @@ MSG);
         //set loan to not eligible
         $requestLoan->update([
             'status' => ConstRequestLoanStatus::NOT_ELIGIBLE,
+            'rejection_reason' => $reason,
         ]);
         return 'Loan request not eligible';
 

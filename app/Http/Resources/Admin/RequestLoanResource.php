@@ -22,6 +22,7 @@ class RequestLoanResource extends JsonResource
             'loan_amount' => $this->loan_amount, // Maps to "600.00"
             'loan_duration' => $this->loan_duration, // Maps to 6
             'status' => $this->status, // Maps to "rejected"
+            'rejection_reason' => $this->rejection_reason, // Maps to "Not eligible"
             'created_at' => $this->created_at, // Maps to "2025-04-29T07:40:59.000000Z"
             'updated_at' => $this->updated_at, // Maps to "2025-05-02T10:34:15.000000Z"
 

@@ -7,6 +7,7 @@ use App\Constants\ConstUserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Requests\Auth\VerifyCodeRequest;
 use App\Models\Admin;
 use App\Models\Borrower;
@@ -15,6 +16,7 @@ use App\Models\Liveliness;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Traits\OTP;
+use App\Traits\UploadImage;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +26,7 @@ class AuthController extends Controller
 {
     use BaseApiResponse;
     use OTP;
+    use UploadImage;
 
 
     /**
@@ -258,4 +261,84 @@ class AuthController extends Controller
             return $this->failed($e->getMessage(), 'Fail', 'Old password is incorrect', 401);
         }
     }
+
+    //update profile
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $user = auth()->user();
+        $profile = $this->getUserProfile($user);
+
+        if (!$profile) {
+            return $this->failed(null, 'Fail', 'Profile not found', 404);
+        }
+
+        // Check if the phone number is already taken by another user
+        $existingUser = User::query()->where('phone', $request->input('phone'))->where('id', '!=', $user->id)->first();
+        if ($existingUser) {
+            return $this->failed(null, 'Fail', 'Phone number already taken', 409);
+        }
+
+        $image = $request->file('image');
+        $imagePath = $profile->image;
+        if ($image) {
+            $imagePath = $this->uploadImage($image, 'borrower', 'public');
+            // Delete the old image if it exists
+            if ($profile->image && file_exists(public_path($profile->image))) {
+                unlink(public_path($profile->image));
+            }
+        }
+
+        $profile->update([
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+            'gender' => $request->input('gender'),
+            'dob' => $request->input('dob'),
+            'address' => $request->input('address'),
+            'image' => $imagePath,
+        ]);
+
+        // Update user data
+        $user->update([
+            'phone' => $request->input('phone'),
+        ]);
+
+        $profile = null;
+        //check $user->role if admin or borrower so join the table
+        if ($user->role == ConstUserRole::BORROWER) {
+            $profile = Borrower::query()->where('user_id', $user->id)->first();
+        }
+
+        if ($user->role == ConstUserRole::ADMIN) {
+            $profile = Admin::query()->where('user_id', $user->id)->first();
+        }
+
+        $token = $user->createToken('token_base_name')->plainTextToken;
+
+        //add $profile to user
+        $user->profile = $profile;
+        $user->role = (int) $user->role;
+        $user->status = (int) $user->status;
+
+        return $this->successLogin($user, $token, 'Login', 'Login successful');
+    }
+
+    /**
+     * Get the related profile model for the user.
+     *
+     * @param \App\Models\User $user
+     * @return \App\Models\Admin|\App\Models\Borrower|null
+     */
+    protected function getUserProfile($user)
+    {
+        if ($user->role == ConstUserRole::BORROWER) {
+            return Borrower::query()->where('user_id', $user->id)->first();
+        }
+
+        if ($user->role == ConstUserRole::ADMIN) {
+            return Admin::query()->where('user_id', $user->id)->first();
+        }
+
+        return null;
+    }
+
 }

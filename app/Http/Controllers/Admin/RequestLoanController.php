@@ -31,7 +31,7 @@ class RequestLoanController extends Controller
         if ($active) {
             // If active is true, show only pending and eligible
             $statusesToFilter = [
-                ConstRequestLoanStatus::PENDING,
+                ConstRequestLoanStatus::NOT_ELIGIBLE,
                 ConstRequestLoanStatus::ELIGIBLE
             ];
         } elseif ($status) {
@@ -42,6 +42,7 @@ class RequestLoanController extends Controller
             // You might want to show all statuses or some other default
             // Currently showing approved and rejected as per original code
             $statusesToFilter = [
+                ConstRequestLoanStatus::PENDING,
                 ConstRequestLoanStatus::APPROVED,
                 ConstRequestLoanStatus::REJECTED,
             ];

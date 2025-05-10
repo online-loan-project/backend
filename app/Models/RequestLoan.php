@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class RequestLoan extends Model
 {
     //
-    protected $fillable = ['loan_amount', 'loan_duration', 'loan_type', 'status', 'user_id'];
+    protected $fillable = ['loan_amount', 'loan_duration', 'loan_type', 'rejection_reason', 'status', 'user_id'];
     //relationship to user
     public function user()
     {
